@@ -7,4 +7,7 @@ const BASE_URL = '/api/v1/questions';
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react(),tailwindcss(),],
+  build: {
+    outDir: 'dist'
+  }
 })
