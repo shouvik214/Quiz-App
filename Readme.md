@@ -1,2 +1,3 @@
 Quiz-App
-Websites that creates custom quizes using gemini api
+
+Websites that creates custom quizzes using gemini api
