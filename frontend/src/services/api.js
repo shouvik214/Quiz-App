@@ -1,10 +1,10 @@
 import axios from 'axios'
 
-const BASE_URL = import.meta.env.VITE_BACKEND_URL
+const BASE_URL = '/api/v1/questions';
 
 export const generateQuestionsAPI = async (formData) => {
   try {
-    const response = await axios.post(`${BASE_URL}/api/v1/questions`, formData)
+    const response = await axios.post(`${BASE_URL}`, formData)
     return response.data // contains { questions: [...] }
   } catch (error) {
     // Axios-specific error handling
