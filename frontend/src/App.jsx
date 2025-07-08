@@ -1,15 +1,28 @@
-import React from 'react'
-import QuestionGenerator from './components/QuestionGenerator'
+import React from 'react';
+import { Routes, Route } from 'react-router-dom';
+import QuestionGenerator from './components/QuestionGenerator';
+import Login from './pages/Login';
+import ProtectedRoute from './routes/ProtectedRoute';
 
-function App() {
+const App = () => {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-8 px-4">
-      <div className="max-w-4xl mx-auto">
-        <QuestionGenerator />
-      </div>
-    </div>
-  )
-}
+    <Routes>
+      <Route path="/login" element={<Login />} />
 
-export default App
+      <Route
+        path="/"
+        element={
+          <ProtectedRoute>
+            <QuestionGenerator />
+          </ProtectedRoute>
+        }
+      />
+    </Routes>
+  );
+};
+
+export default App;
+
+
+
 
