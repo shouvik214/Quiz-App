@@ -8,7 +8,11 @@ const authRoutes = require("./routes/auth-routes.js");
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-app.use(cors());
+//app.use(cors());
+app.use(cors({
+  origin: process.env.FRONTEND_URL, // frontend URL
+  credentials: true // if using cookies or authorization headers
+}));
 app.use(express.json()); // for parsing application/json
 
 app.use("/api/v1/questions", questionRoute)
