@@ -1,8 +1,8 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
-const connectDb = require("./utils/db.js")
-const questionRoute = require('./routes/question-routes.js')
+const connectDb = require("./utils/db.js");
+const questionRoute = require('./routes/question-routes.js');
 const authRoutes = require("./routes/auth-routes.js");
 
 const app = express();
@@ -19,3 +19,5 @@ connectDb().then( () => {
         console.log(`server is running on ${PORT}`)
 })
 })
+
+
