@@ -14,6 +14,7 @@ app.use(cors({
   credentials: true // if using cookies or authorization headers
 }));
 app.use(express.json()); // for parsing application/json
+app.use(express.urlencoded({ extended: true }));
 
 app.use("/api/v1/questions", questionRoute)
 app.use("/api/v1/auth", authRoutes)
