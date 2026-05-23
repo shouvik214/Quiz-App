@@ -20,7 +20,6 @@
     "http": "^0.0.1-security",
     "jsonwebtoken": "^9.0.2",
     "mongodb": "^6.17.0",
-    "mongoose": "^8.16.1",
     "zod": "^3.25.71"
   },
   "devDependencies": {
