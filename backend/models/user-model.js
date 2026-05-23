@@ -1,26 +1,35 @@
-const mongoose = require("mongoose");
+const { prisma } = require("../utils/db");
 
-const userSchema = new mongoose.Schema({
-  username: { 
-    type: String, 
-    required: true, 
-    unique: true,
-    trim: true,
-    minlength: 3,
-    maxlength: 20
-  },
-  email: { 
-    type: String, 
-    required: true, 
-    unique: true,
-    trim: true,
-    lowercase: true
-  },
-  password: { 
-    type: String, 
-    required: true 
-  }
-}, { timestamps: true });
+const findUserByEmail = async (email) => {
+  return prisma.user.findUnique({
+    where: { email }
+  });
+};
 
-const User = mongoose.model("User", userSchema);
-module.exports = User;
+const findUserByUsername = async (username) => {
+  return prisma.user.findUnique({
+    where: { username }
+  });
+};
+
+const findUserByEmailOrUsername = async (email, username) => {
+  return prisma.user.findFirst({
+    where: {
+      OR: [
+        { email },
+        { username }
+      ]
+    }
+  });
+};
+
+const createUser = async (data) => {
+  return prisma.user.create({ data });
+};
+
+module.exports = {
+  findUserByEmail,
+  findUserByUsername,
+  findUserByEmailOrUsername,
+  createUser
+};

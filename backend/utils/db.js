@@ -1,16 +1,20 @@
-require('dotenv').config();
-const mongoose = require("mongoose");
+require("dotenv").config();
+const { PrismaClient } = require('../generated/prisma')
 
-const URL = process.env.MONGODB_URL;
+//const prisma = new PrismaClient({
+//  datasourceUrl: process.env.DATABASE_URL,
+//});
 
-const connectDb = async () =>{
-    try {
-        await mongoose.connect(URL);
-        console.log("connection successful");
-    } catch (error) {
-        console.error("database not connected")
-        process.exit(0);
-    }
-}
+const prisma = new PrismaClient();
 
-module.exports = connectDb;
+const connectDb = async () => {
+  try {
+    await prisma.$connect();
+    console.log("SQL database connected successfully");
+  } catch (error) {
+    console.error("Database connection failed:", error);
+    process.exit(1);
+  }
+};
+
+module.exports = { prisma, connectDb };

@@ -1,4 +1,8 @@
-const User = require("../models/user-model.js");
+const {
+  findUserByEmail,
+  findUserByEmailOrUsername,
+  createUser
+} = require("../models/user-model.js");
 const { generateToken } = require('../utils/jwt');
 const bcrypt = require('bcrypt');
 
@@ -6,10 +10,7 @@ const register = async (req, res) => {
   try {
     const { username, email, password } = req.body;
 
-    const existUser = await User.findOne({
-      $or: [{ email }, { username }]
-    });
-
+    const existUser = await findUserByEmailOrUsername(email, username);
     if (existUser) {
       return res.status(400).json({
         success: false,
@@ -20,24 +21,21 @@ const register = async (req, res) => {
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
-
-    const user = new User({
+    const user = await createUser({
       username,
       email,
       password: hashedPassword
     });
 
-    await user.save();
-
     const token = generateToken({
-      userId: user._id,  // Fixed: consistent field name
+      userId: user.id,
       username: user.username,
       email: user.email
     });
 
-    // Remove password from response
     const userResponse = {
-      _id: user._id,
+      id: user.id,
+      _id: user.id,
       username: user.username,
       email: user.email,
       createdAt: user.createdAt,
@@ -55,7 +53,6 @@ const register = async (req, res) => {
   } catch (error) {
     console.error('Registration error:', error);
 
-    // Handle validation errors
     if (error.name === 'ValidationError') {
       const errorMessages = Object.values(error.errors).map(err => err.message);
       return res.status(400).json({
@@ -65,9 +62,10 @@ const register = async (req, res) => {
       });
     }
 
-    // Handle duplicate key error (e.g., unique fields)
-    if (error.code === 11000) {
-      const field = Object.keys(error.keyPattern)[0];
+    if (error.code === 'P2002') {
+      const field = Array.isArray(error.meta?.target)
+        ? error.meta.target[0]
+        : 'field';
       return res.status(400).json({
         success: false,
         message: `${field} already exists`
@@ -85,7 +83,7 @@ const login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    const user = await User.findOne({ email });
+    const user = await findUserByEmail(email);
     if (!user) {
       return res.status(401).json({
         success: false,
@@ -97,19 +95,19 @@ const login = async (req, res) => {
     if (!isValidPassword) {
       return res.status(401).json({
         success: false,
-        message: 'Invalid email or password'  // Fixed: consistent error message
+        message: 'Invalid email or password'
       });
     }
 
     const token = generateToken({
-      userId: user._id,  // Fixed: consistent field name
+      userId: user.id,
       username: user.username,
       email: user.email
     });
 
-    // Remove password from response
     const userResponse = {
-      _id: user._id,
+      id: user.id,
+      _id: user.id,
       username: user.username,
       email: user.email,
       createdAt: user.createdAt,
