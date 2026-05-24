@@ -6,7 +6,8 @@ const generateQuestions = async (topic, count, level) => {
 Generate ${count} multiple-choice questions on "${topic}" with ${level} difficulty.
 
 Rules:
-- Return only quiz data
+- Return only quiz data matching the specified schema.
+- Keep options concise and clear to avoid cutting off mid-generation.
 - Each question must have:
   - question
   - options (a, b, c, d)
@@ -16,7 +17,7 @@ Rules:
 
   try {
     const response = await axios.post(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
+      "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent",
       {
         contents: [
           {
@@ -29,7 +30,7 @@ Rules:
         ],
 
         generationConfig: {
-          temperature: 0.7,
+          temperature: 0.5,
           maxOutputTokens: 2048,
 
           // Force JSON output
@@ -73,7 +74,8 @@ Rules:
       },
       {
         headers: {
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
+          "x-goog-api-key": process.env.GEMINI_API_KEY
         }
       }
     );
@@ -86,7 +88,16 @@ Rules:
     }
 
     // Parse JSON
-    const questions = JSON.parse(content);
+    let questions;
+
+    try {
+      questions = JSON.parse(content);
+    } catch (parseError) {
+      console.error("RAW GEMINI RESPONSE:");
+      console.log(content);
+    
+      throw new Error("Gemini returned invalid JSON");
+    }
 
     // Extra backend validation
     if (!Array.isArray(questions)) {
@@ -112,12 +123,10 @@ Rules:
     return questions;
 
   } catch (error) {
-    console.error(
-      "Gemini API Error:",
-      error.response?.data || error.message
-    );
+    const apiErrorMessage = error.response?.data?.error?.message || error.response?.data || error.message;
+    console.error("Gemini API Error Detail:", apiErrorMessage);
 
-    throw new Error("Failed to generate quiz questions");
+    throw new Error(`Failed to generate quiz questions: ${apiErrorMessage}`);
   }
 };
 
