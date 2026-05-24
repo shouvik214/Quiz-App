@@ -1,66 +1,124 @@
-const axios = require('axios');
-require('dotenv').config();
+const axios = require("axios");
+require("dotenv").config();
 
-const generateQuestions = async (topic,count,level) => {
-  const prompt = `Generate ${count} multiple-choice questions on the topic "${topic}" with ${level} difficulty level.
+const generateQuestions = async (topic, count, level) => {
+  const prompt = `
+Generate ${count} multiple-choice questions on "${topic}" with ${level} difficulty.
 
-Difficulty guidelines:
-- Easy: Basic concepts, definitions, and straightforward facts
-- Medium: Application of concepts, moderate analysis, and connections between ideas
-- Hard: Complex analysis, synthesis of multiple concepts, and advanced problem-solving
+Rules:
+- Return only quiz data
+- Each question must have:
+  - question
+  - options (a, b, c, d)
+  - answer
+- answer must be one of: a, b, c, d
+`;
 
-Each question should have 4 options (a, b, c, d) and specify the correct answer as "answer: <option letter>".
-Format as JSON like:
-[
-  {
-    "question": "What is ...?",
-    "options": {
-      "a": "...",
-      "b": "...",
-      "c": "...",
-      "d": "..."
-    },
-    "answer": "a"
-  }
-]
-
-Return only the JSON array, no additional text.`;
-
-  const response = await axios.post(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
-    {
-      contents: [
-        {
-          parts: [
-            {
-              text: prompt
-            }
-          ]
-        }
-      ],
-      generationConfig: {
-        temperature: 0.7,
-        maxOutputTokens: 2048,
-      }
-    },
-    {
-      headers: {
-        'Content-Type': 'application/json'
-      }
-    }
-  );
-
-  const content = response.data.candidates[0].content.parts[0].text;
-  
-  // Parse the JSON response
   try {
-    // Clean the response in case it has markdown formatting
-    const cleanContent = content.replace(/```json\n?|\n?```/g, '').trim();
-    const json = JSON.parse(cleanContent);
-    return json;
-  } catch (err) {
-    throw new Error(`Failed to parse AI response as JSON: ${err.message}`);
+    const response = await axios.post(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
+      {
+        contents: [
+          {
+            parts: [
+              {
+                text: prompt
+              }
+            ]
+          }
+        ],
+
+        generationConfig: {
+          temperature: 0.7,
+          maxOutputTokens: 2048,
+
+          // Force JSON output
+          responseMimeType: "application/json",
+
+          // Structured output schema
+          responseSchema: {
+            type: "ARRAY",
+
+            items: {
+              type: "OBJECT",
+
+              properties: {
+                question: {
+                  type: "STRING"
+                },
+
+                options: {
+                  type: "OBJECT",
+
+                  properties: {
+                    a: { type: "STRING" },
+                    b: { type: "STRING" },
+                    c: { type: "STRING" },
+                    d: { type: "STRING" }
+                  },
+
+                  required: ["a", "b", "c", "d"]
+                },
+
+                answer: {
+                  type: "STRING",
+                  enum: ["a", "b", "c", "d"]
+                }
+              },
+
+              required: ["question", "options", "answer"]
+            }
+          }
+        }
+      },
+      {
+        headers: {
+          "Content-Type": "application/json"
+        }
+      }
+    );
+
+    const content =
+      response.data?.candidates?.[0]?.content?.parts?.[0]?.text;
+
+    if (!content) {
+      throw new Error("Empty response from Gemini");
+    }
+
+    // Parse JSON
+    const questions = JSON.parse(content);
+
+    // Extra backend validation
+    if (!Array.isArray(questions)) {
+      throw new Error("Invalid response format");
+    }
+
+    questions.forEach((q, index) => {
+      if (
+        !q.question ||
+        !q.options ||
+        !q.answer
+      ) {
+        throw new Error(`Invalid question at index ${index}`);
+      }
+
+      const validAnswers = ["a", "b", "c", "d"];
+
+      if (!validAnswers.includes(q.answer)) {
+        throw new Error(`Invalid answer at index ${index}`);
+      }
+    });
+
+    return questions;
+
+  } catch (error) {
+    console.error(
+      "Gemini API Error:",
+      error.response?.data || error.message
+    );
+
+    throw new Error("Failed to generate quiz questions");
   }
 };
 
-module.exports = generateQuestions ;
+module.exports = generateQuestions;
