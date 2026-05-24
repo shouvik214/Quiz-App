@@ -1,9 +1,18 @@
 export const getDifficultyColor = (level) => {
   switch (level) {
-    case 'easy': return 'text-green-600 bg-green-100'
-    case 'medium': return 'text-yellow-600 bg-yellow-100'
-    case 'hard': return 'text-red-600 bg-red-100'
-    default: return 'text-gray-600 bg-gray-100'
+    case 'easy':   return 'text-emerald-400 bg-emerald-400/10 border border-emerald-400/20'
+    case 'medium': return 'text-amber-400   bg-amber-400/10   border border-amber-400/20'
+    case 'hard':   return 'text-red-400     bg-red-400/10     border border-red-400/20'
+    default:       return 'text-slate-400   bg-slate-400/10   border border-slate-400/20'
+  }
+}
+
+export const getDifficultyDot = (level) => {
+  switch (level) {
+    case 'easy':   return '🟢'
+    case 'medium': return '🟡'
+    case 'hard':   return '🔴'
+    default:       return '⚪'
   }
 }
 

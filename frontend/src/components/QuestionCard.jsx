@@ -1,31 +1,62 @@
 const QuestionCard = ({ question, questionIndex, selectedAnswer, onAnswerSelect }) => (
-  <div className="border-b border-gray-200 pb-6 last:border-b-0">
-    <h3 className="text-lg font-semibold text-gray-800 mb-4">
-      {questionIndex + 1}. {question.question}
+  <div
+    className="pb-6 last:pb-0"
+    style={{ borderBottom: '1px solid var(--border)' }}
+  >
+    <h3 className="text-base font-semibold mb-4 leading-relaxed" style={{ color: 'var(--text-1)' }}>
+      <span
+        className="inline-flex items-center justify-center w-7 h-7 rounded-lg text-xs font-bold mr-3 flex-shrink-0"
+        style={{ background: 'rgba(99,102,241,0.15)', color: 'var(--accent)' }}
+      >
+        {questionIndex + 1}
+      </span>
+      {question.question}
     </h3>
-    <div className="space-y-2">
-      {Object.entries(question.options).map(([key, value]) => (
-        <label
-          key={key}
-          className={`flex items-center p-3 rounded-lg border cursor-pointer transition ${
-            selectedAnswer === key
-              ? 'border-indigo-500 bg-indigo-50'
-              : 'border-gray-200 hover:border-gray-300'
-          }`}
-        >
-          <input
-            type="radio"
-            name={`question-${questionIndex}`}
-            value={key}
-            checked={selectedAnswer === key}
-            onChange={() => onAnswerSelect(questionIndex, key)}
-            className="h-4 w-4 text-indigo-600 focus:ring-indigo-500"
-          />
-          <span className="ml-3 text-gray-700">
-            <strong>{key.toUpperCase()}.</strong> {value}
-          </span>
-        </label>
-      ))}
+
+    <div className="space-y-2.5 ml-10">
+      {Object.entries(question.options).map(([key, value]) => {
+        const isSelected = selectedAnswer === key
+        return (
+          <label
+            key={key}
+            className="flex items-center gap-3 p-3.5 rounded-xl cursor-pointer transition-all duration-200"
+            style={{
+              background: isSelected ? 'rgba(99,102,241,0.12)' : 'var(--bg-surface)',
+              border: isSelected ? '1px solid rgba(99,102,241,0.6)' : '1px solid var(--border)',
+              boxShadow: isSelected ? '0 0 0 1px rgba(99,102,241,0.2)' : 'none',
+            }}
+            onMouseEnter={e => { if (!isSelected) e.currentTarget.style.borderColor = 'rgba(99,102,241,0.3)'; }}
+            onMouseLeave={e => { if (!isSelected) e.currentTarget.style.borderColor = 'var(--border)'; }}
+          >
+            {/* Custom radio */}
+            <div
+              className="flex-shrink-0 w-4 h-4 rounded-full border-2 flex items-center justify-center transition-all duration-200"
+              style={{
+                borderColor: isSelected ? 'var(--accent)' : 'var(--text-3)',
+              }}
+            >
+              {isSelected && (
+                <div className="w-2 h-2 rounded-full" style={{ background: 'var(--accent)' }} />
+              )}
+            </div>
+            <input
+              type="radio"
+              name={`question-${questionIndex}`}
+              value={key}
+              checked={isSelected}
+              onChange={() => onAnswerSelect(questionIndex, key)}
+              className="sr-only"
+            />
+
+            <span className="text-sm" style={{ color: isSelected ? 'var(--text-1)' : 'var(--text-2)' }}>
+              <strong style={{ color: isSelected ? 'var(--accent)' : 'var(--text-3)' }}>
+                {key.toUpperCase()}.
+              </strong>{' '}
+              {value}
+            </span>
+          </label>
+        )
+      })}
     </div>
   </div>
 )

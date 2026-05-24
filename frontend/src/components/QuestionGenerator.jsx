@@ -7,11 +7,7 @@ import ErrorMessage from './ErrorMessage'
 import { generateQuestionsAPI } from '../services/api'
 
 const QuestionGenerator = () => {
-  const [formData, setFormData] = useState({
-    topic: '',
-    count: 5,
-    level: 'medium',
-  })
+  const [formData, setFormData] = useState({ topic: '', count: 5, level: 'medium' })
   const [questions, setQuestions] = useState([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -20,24 +16,12 @@ const QuestionGenerator = () => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target
-    setFormData(prev => ({
-      ...prev,
-      [name]: name === 'count' ? parseInt(value) : value,
-    }))
+    setFormData(prev => ({ ...prev, [name]: name === 'count' ? parseInt(value) : value }))
   }
 
   const generateQuestions = async () => {
-    if (!formData.topic.trim()) {
-      setError('Topic is required')
-      return
-    }
-
-    setLoading(true)
-    setError('')
-    setQuestions([])
-    setUserAnswers({})
-    setShowResults(false)
-
+    if (!formData.topic.trim()) { setError('Topic is required'); return }
+    setLoading(true); setError(''); setQuestions([]); setUserAnswers({}); setShowResults(false)
     try {
       const data = await generateQuestionsAPI(formData)
       setQuestions(data.questions)
@@ -49,60 +33,57 @@ const QuestionGenerator = () => {
   }
 
   const handleAnswerSelect = (questionIndex, selectedOption) => {
-    setUserAnswers(prev => ({
-      ...prev,
-      [questionIndex]: selectedOption,
-    }))
+    setUserAnswers(prev => ({ ...prev, [questionIndex]: selectedOption }))
   }
 
   const submitQuiz = () => setShowResults(true)
 
   const resetQuiz = () => {
-    setQuestions([])
-    setUserAnswers({})
-    setShowResults(false)
-    setError('')
-    setFormData({
-      topic: '',
-      count: 5,
-      level: 'medium',
-    })
+    setQuestions([]); setUserAnswers({}); setShowResults(false); setError('')
+    setFormData({ topic: '', count: 5, level: 'medium' })
   }
 
   return (
-    <>
-      <Header />
-      {questions.length === 0 && (
-        <>
-          <QuestionForm
+    <div
+      className="min-h-screen relative"
+      style={{ background: 'var(--bg-base)' }}
+    >
+      {/* Content */}
+      <div className="relative z-10 max-w-3xl mx-auto px-4 py-10">
+        <Header />
+
+        {questions.length === 0 && (
+          <>
+            <QuestionForm
+              formData={formData}
+              onInputChange={handleInputChange}
+              onSubmit={generateQuestions}
+              loading={loading}
+            />
+            {error && <ErrorMessage message={error} />}
+          </>
+        )}
+
+        {questions.length > 0 && !showResults && (
+          <QuizDisplay
+            questions={questions}
             formData={formData}
-            onInputChange={handleInputChange}
-            onSubmit={generateQuestions}
-            loading={loading}
+            userAnswers={userAnswers}
+            onAnswerSelect={handleAnswerSelect}
+            onSubmit={submitQuiz}
+            onReset={resetQuiz}
           />
-          {error && <ErrorMessage message={error} />}
-        </>
-      )}
+        )}
 
-      {questions.length > 0 && !showResults && (
-        <QuizDisplay
-          questions={questions}
-          formData={formData}
-          userAnswers={userAnswers}
-          onAnswerSelect={handleAnswerSelect}
-          onSubmit={submitQuiz}
-          onReset={resetQuiz}
-        />
-      )}
-
-      {showResults && (
-        <QuizResults
-          questions={questions}
-          userAnswers={userAnswers}
-          onReset={resetQuiz}
-        />
-      )}
-    </>
+        {showResults && (
+          <QuizResults
+            questions={questions}
+            userAnswers={userAnswers}
+            onReset={resetQuiz}
+          />
+        )}
+      </div>
+    </div>
   )
 }
 
